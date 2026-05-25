@@ -1,16 +1,16 @@
-import React from 'react'
-import Navbar from './components/Navbar/Navbar'
-import Sidebar from './components/Sidebar/Sidebar'
-import { Route, Routes } from 'react-router-dom'
-import Order from './pages/Order/Order'
-import Add from './pages/Add/Add'
-import List from './pages/List/List'
+import React from "react";
+import Navbar from "./components/Navbar/Navbar";
+import Sidebar from "./components/Sidebar/Sidebar";
+import { Route, Routes } from "react-router-dom";
+import Order from "./pages/Order/Order";
+import Add from "./pages/Add/Add";
+import List from "./pages/List/List";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const App = () => {
-  const url = "http://localhost:4000";
+  const url = import.meta?.env?.VITE_API_URL || "http://localhost:4000";
   return (
-    <div>
+    <main>
       <ToastContainer />
       <Navbar />
       <hr />
@@ -22,8 +22,8 @@ const App = () => {
           <Route path="/order" element={<Order url={url} />} />
         </Routes>
       </div>
-    </div>
+    </main>
   );
-}
+};
 
-export default App
+export default App;

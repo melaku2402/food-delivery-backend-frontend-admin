@@ -5,8 +5,10 @@ import { createContext, useEffect, useState } from "react";
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
-  const [cartItems, setCartItems] = useState({}); 
-  const url = "https://food-del-backend-lziq.onrender.com";
+  const [cartItems, setCartItems] = useState({});
+  const url =
+    import.meta?.env?.VITE_API_URL ||
+    "https://food-del-backend-lziq.onrender.com";
   const [token, setToken] = useState("");
   const [food_list, setFoodList] = useState([]);
 
@@ -16,9 +18,19 @@ const StoreContextProvider = (props) => {
     } else {
       setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
     }
-    if(token){
-      await axios.post(url+"/api/cart/add",{itemId},{headers:{token}})
-
+    if (token) {
+      try {
+        await axios.post(
+          url + "/api/cart/add",
+          { itemId },
+          { headers: { token } },
+        );
+      } catch (err) {
+        console.error(
+          "addToCart API error:",
+          err?.response?.data || err.message || err,
+        );
+      }
     }
   };
 
@@ -42,9 +54,17 @@ const StoreContextProvider = (props) => {
   //   }
   // };
 
-   const removeFromCart = (itemId) => {
-     setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
-   };
+  const removeFromCart = (itemId) => {
+    setCartItems((prev) => {
+      const current = prev[itemId] || 0;
+      if (current <= 1) {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      }
+      return { ...prev, [itemId]: current - 1 };
+    });
+  };
 
   // // Corrected removeFromCart function
   // const removeFromCart = (itemId) => {
@@ -67,25 +87,42 @@ const StoreContextProvider = (props) => {
     let totalAmount = 0;
     for (const item in cartItems) {
       if (cartItems[item] > 0) {
-        let itemInfo = food_list.find((product) => product._id === item);
-        totalAmount += itemInfo.price * cartItems[item];
+        const itemInfo = food_list.find((product) => product._id === item);
+        if (!itemInfo) continue; // guard: skip if product metadata not yet available
+        totalAmount += (itemInfo.price || 0) * cartItems[item];
       }
     }
     return totalAmount;
   };
 
   const fetchFoodList = async () => {
-    const response = await axios.get(url + "/api/food/list");
-    setFoodList(response.data.data);
-    console.log(response.data);
+    try {
+      const response = await axios.get(url + "/api/food/list");
+      setFoodList(response.data.data || []);
+      console.log(response.data);
+    } catch (err) {
+      console.error(
+        "fetchFoodList error:",
+        err?.response?.data || err.message || err,
+      );
+      setFoodList([]);
+    }
   };
   const loadCardData = async (token) => {
-    const response = await axios.post(
-      url + "/api/cart/get",
-      {},
-      { headers: { token } }
-    );
-    setCartItems(response.data.cartData);
+    try {
+      const response = await axios.post(
+        url + "/api/cart/get",
+        {},
+        { headers: { token } },
+      );
+      setCartItems(response.data.cartData || {});
+    } catch (err) {
+      console.error(
+        "loadCardData error:",
+        err?.response?.data || err.message || err,
+      );
+      setCartItems({});
+    }
   };
 
   useEffect(() => {
@@ -109,7 +146,7 @@ const StoreContextProvider = (props) => {
     url,
     token,
     setToken,
-    setFoodList
+    setFoodList,
   };
 
   return (
