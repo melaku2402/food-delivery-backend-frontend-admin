@@ -5,8 +5,10 @@ import { createContext, useEffect, useState } from "react";
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
-  const [cartItems, setCartItems] = useState({}); 
-  const url = "https://food-del-backend-lziq.onrender.com";
+  const [cartItems, setCartItems] = useState({});
+  const url =
+    import.meta?.env?.VITE_API_URL ||
+    "https://food-del-backend-lziq.onrender.com";
   const [token, setToken] = useState("");
   const [food_list, setFoodList] = useState([]);
 
@@ -16,9 +18,12 @@ const StoreContextProvider = (props) => {
     } else {
       setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
     }
-    if(token){
-      await axios.post(url+"/api/cart/add",{itemId},{headers:{token}})
-
+    if (token) {
+      await axios.post(
+        url + "/api/cart/add",
+        { itemId },
+        { headers: { token } },
+      );
     }
   };
 
@@ -42,9 +47,9 @@ const StoreContextProvider = (props) => {
   //   }
   // };
 
-   const removeFromCart = (itemId) => {
-     setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
-   };
+  const removeFromCart = (itemId) => {
+    setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
+  };
 
   // // Corrected removeFromCart function
   // const removeFromCart = (itemId) => {
@@ -83,7 +88,7 @@ const StoreContextProvider = (props) => {
     const response = await axios.post(
       url + "/api/cart/get",
       {},
-      { headers: { token } }
+      { headers: { token } },
     );
     setCartItems(response.data.cartData);
   };
@@ -109,7 +114,7 @@ const StoreContextProvider = (props) => {
     url,
     token,
     setToken,
-    setFoodList
+    setFoodList,
   };
 
   return (
